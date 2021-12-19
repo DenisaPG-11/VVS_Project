@@ -1,10 +1,14 @@
 package com.serverweb.webserver.web;
 
+import com.serverweb.web.*;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 
 
@@ -18,14 +22,82 @@ class WebParserTest {
         webParser =  new WebParser();
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void parseRequest() {
-        webParser.parseRequest(
-              generateValidTestCase()
-        );
+        WebRequest request = null;
+        try {
+            request = webParser.parseRequest(
+                        generateValidGETTestCase()
+            );
+        } catch (ParsingException e) {
+            fail(e);
+        }
+
+        assertEquals(request.getMethod(), WebMethod.GET);
     }
 
-    private InputStream generateValidTestCase() {
+    @Test
+    void parseRequestBadMethodTest() {
+        try {
+            WebRequest request = webParser.parseRequest(
+                    generateBadValueTestCase1()
+            );
+            fail();
+        } catch (ParsingException e) {
+            assertEquals(e.getErrorCode(), StatusCode.SERVER_ERROR_501_METHOD_NOT_IMPLEMENTED);
+        }
+    }
+
+    @Test
+    void parseRequestBadNameTest() {
+        try {
+            WebRequest request = webParser.parseRequest(
+                    generateBadValueTestCase2()
+            );
+            fail();
+        } catch (ParsingException e) {
+            assertEquals(e.getErrorCode(), StatusCode.SERVER_ERROR_501_METHOD_NOT_IMPLEMENTED);
+        }
+    }
+
+    @Test
+    void parseRequestBadTestInvalidNumberOfItem() {
+        try {
+            WebRequest request = webParser.parseRequest(
+                    generateBadTestCaseInvalidNumOfItem()
+            );
+            fail();
+        } catch (ParsingException e) {
+            assertEquals(e.getErrorCode(), StatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+        }
+    }
+
+    @Test
+    void parseRequestBadTestEmptyLine() {
+        try {
+            WebRequest request = webParser.parseRequest(
+                    generateBadTestCaseEmptyRequestLine()
+            );
+            fail();
+        } catch (ParsingException e) {
+            assertEquals(e.getErrorCode(), StatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+        }
+    }
+
+    @Test
+    void parseRequestBadTestNoLFInRequestLine() {
+        try {
+            WebRequest request = webParser.parseRequest(
+                    generateBadTestCaseInvalidNumOfItemLFMissing()
+            );
+            fail();
+        } catch (ParsingException e) {
+            assertEquals(e.getErrorCode(), StatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+        }
+    }
+
+    //perfect string request
+    private InputStream generateValidGETTestCase() {
         String request = "GET / HTTP/1.1\r\n" +
                 "Host: 127.0.0.1:10008\n\n" +
                 "Connection: keep-alive\n\n" +
@@ -43,6 +115,86 @@ class WebParserTest {
                 "Accept-Encoding: gzip, deflate, br\n\n" +
                 "Accept-Language: en-US,en;q=0.9,ro;q=0.8\r\n" +
                 "\r\n" ;
+
+        InputStream inputStream = new ByteArrayInputStream(
+                request.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    //wrong string request
+    private InputStream generateBadValueTestCase1() {
+        String request = "GeT / HTTP/1.1\r\n" +
+                "Host: localhost:8080\r\n" +
+                "Accept-Language: en-US,en;q=0.9,es;q=0.8,pt;q=0.7,de-DE;q=0.6,de;q=0.5,la;q=0.4\r\n" +
+                "\r\n";
+
+        InputStream inputStream = new ByteArrayInputStream(
+                request.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    //wrong name in the string request
+    private InputStream generateBadValueTestCase2() {
+        String request = "GETTTTTTTTTTTTTTTTTT / HTTP/1.1\r\n" +
+                "Host: localhost:8080\r\n" +
+                "Accept-Language: en-US,en;q=0.9,es;q=0.8,pt;q=0.7,de-DE;q=0.6,de;q=0.5,la;q=0.4\r\n" +
+                "\r\n";
+
+        InputStream inputStream = new ByteArrayInputStream(
+                request.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    //more than three item
+    private InputStream generateBadTestCaseInvalidNumOfItem() {
+        String request = "GET / AAAAAAAAAAA HTTP/1.1\r\n" +
+                "Host: localhost:8080\r\n" +
+                "Accept-Language: en-US,en;q=0.9,es;q=0.8,pt;q=0.7,de-DE;q=0.6,de;q=0.5,la;q=0.4\r\n" +
+                "\r\n";
+
+        InputStream inputStream = new ByteArrayInputStream(
+                request.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    //empty request lline
+    private InputStream generateBadTestCaseEmptyRequestLine() {
+        String request = "\r\n" +
+                "Host: localhost:8080\r\n" +
+                "Accept-Language: en-US,en;q=0.9,es;q=0.8,pt;q=0.7,de-DE;q=0.6,de;q=0.5,la;q=0.4\r\n" +
+                "\r\n";
+
+        InputStream inputStream = new ByteArrayInputStream(
+                request.getBytes(
+                        StandardCharsets.US_ASCII
+                )
+        );
+
+        return inputStream;
+    }
+
+    //no LF in request line
+    private InputStream generateBadTestCaseInvalidNumOfItemLFMissing() {
+        String request = "GET / HTTP/1.1\r" +
+                "Host: localhost:8080\r\n" +
+                "Accept-Language: en-US,en;q=0.9,es;q=0.8,pt;q=0.7,de-DE;q=0.6,de;q=0.5,la;q=0.4\r\n" +
+                "\r\n";
 
         InputStream inputStream = new ByteArrayInputStream(
                 request.getBytes(
