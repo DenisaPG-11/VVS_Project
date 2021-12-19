@@ -68,6 +68,7 @@ public class WebParser {
                 } else {
                     if (!requestTargetParsed) {
                         LOGGER.debug("request line request target to process: {}", stringBuilder.toString());
+                        webRequest.setRequestTarget(stringBuilder.toString());
                         requestTargetParsed = true;
                     } else {
                         throw new ParsingException(StatusCode.CLIENT_ERROR_400_BAD_REQUEST);

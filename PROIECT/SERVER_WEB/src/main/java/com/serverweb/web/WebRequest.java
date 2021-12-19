@@ -10,6 +10,10 @@ public class WebRequest extends WebMessage{
 
     }
 
+    public String getRequest() {
+        return request;
+    }
+
     void setMethod(String methodName) throws ParsingException {
         for (WebMethod method: WebMethod.values()){
             if (methodName.equals(method.name())){
@@ -24,5 +28,12 @@ public class WebRequest extends WebMessage{
 
     public WebMethod getMethod() {
         return method;
+    }
+
+    void setRequestTarget(String request) throws ParsingException {
+        if (request == null || request.length() == 0 ){
+            throw new ParsingException(StatusCode.SERVER_ERROR_500_INTERNAL_SERVER_ERROR);
+        }
+        this.request = request;
     }
 }

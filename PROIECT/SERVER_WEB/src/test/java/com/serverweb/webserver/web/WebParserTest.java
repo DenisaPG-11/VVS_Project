@@ -33,7 +33,9 @@ class WebParserTest {
             fail(e);
         }
 
+        assertNotNull(request);
         assertEquals(request.getMethod(), WebMethod.GET);
+        assertEquals(request.getRequest(), "/");
     }
 
     @Test
