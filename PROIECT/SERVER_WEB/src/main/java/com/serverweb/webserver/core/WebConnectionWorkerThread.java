@@ -12,7 +12,7 @@ import java.sql.SQLOutput;
 public class WebConnectionWorkerThread extends Thread{
 
     private Socket socket;
-    private final static Logger LOGGER = LoggerFactory.getLogger(ServerListenerThread.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(WebConnectionWorkerThread.class);
 
     public WebConnectionWorkerThread (Socket socket){
         this.socket = socket;
