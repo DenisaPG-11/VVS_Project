@@ -1,0 +1,3 @@
+if( !methodParsed){
+    methodParsed = true;
+    boolean methodParsed = false;
