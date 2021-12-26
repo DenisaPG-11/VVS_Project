@@ -1,10 +1,19 @@
 package com.serverweb.webserver;
 
+import com.serverweb.webserver.config.Configuration;
+import com.serverweb.webserver.config.ConfigurationManager;
+import com.serverweb.webserver.core.ServerListenerThread;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 public class Project_GUI  extends JFrame {
+
+        private final static Logger LOGGER = LoggerFactory.getLogger(ServerWeb.class);
 
         JRadioButton jRadioButton1;
         JRadioButton jRadioButton2;
@@ -71,6 +80,25 @@ public class Project_GUI  extends JFrame {
                     else if (jRadioButton2.isSelected()) {
 
                         qual = "Web Server is in : Running state!";
+
+                        //System.out.println("running");
+
+                        //start the server
+                        LOGGER.info("Server starting ...");
+
+                        ConfigurationManager.getInstance().loadConfigurationFile("src/main/resources/web.json");
+                        Configuration conf = ConfigurationManager.getInstance().getCurrentConfiguration();
+
+                        LOGGER.info("Using Port: " + conf.getPort());
+                        LOGGER.info("Using Webroot: " + conf.getWebroot() );
+
+                        try {
+                            ServerListenerThread serverListenerThread = new ServerListenerThread(conf.getPort(), conf.getWebroot());
+                            serverListenerThread.start();
+                        } catch (IOException error) {
+                            error.printStackTrace();
+                        }
+
                     }
                     else if (jRadioButton3.isSelected()) {
 
